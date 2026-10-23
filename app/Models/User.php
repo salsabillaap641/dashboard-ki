@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -29,4 +30,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+protected $fillable = [
+    'name',
+    'username',
+    'email',
+    'password',
+    'role',
+    'kabupaten_id',
+];
+
+public function kabupaten()
+{
+    return $this->belongsTo(\App\Models\Kabupaten::class, 'kabupaten_id');
+}
+
 }

@@ -2,150 +2,113 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DataKi;
 use App\Models\Kabupaten;
 use App\Models\JenisKi;
+use App\Models\RekapKiHarian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
-{
-    $jenisKiId = $request->jenis_ki_id;
-    $kabupatenId = $request->kabupaten_id;
+    {
+        $jenisKiId = $request->input('jenis_ki_id');
+        $kabupatenId = $request->input('kabupaten_id');
+        // Dashboard memakai snapshot tanggal terbaru; data dari tanggal berbeda
+        // tidak dijumlahkan agar tidak terjadi penghitungan ganda.
+        $tanggalRekapTerbaru = RekapKiHarian::max('tanggal_data');
+        $tahun = $tanggalRekapTerbaru
+            ? (int) \Carbon\Carbon::parse($tanggalRekapTerbaru)->year
+            : (int) $request->input('tahun', now()->year);
 
+        $rekapQuery = RekapKiHarian::query()
+            ->when($tanggalRekapTerbaru, fn ($query) => $query->whereDate('tanggal_data', $tanggalRekapTerbaru))
+            ->whereIn('status', ['terdaftar', 'proses']);
 
-    // =========================
-    // QUERY DATA KI
-    // =========================
-
-    $query = DataKi::query();
-
-    if ($jenisKiId) {
-        $query->where('jenis_ki_id', $jenisKiId);
-    }
-
-    if ($kabupatenId) {
-        $query->where('kabupaten_id', $kabupatenId);
-    }
-
-
-    // =========================
-    // KPI
-    // =========================
-
-    $totalKI = $query->count();
-
-    $terdaftar = (clone $query)
-        ->where('status', 'terdaftar')
-        ->count();
-
-    $proses = (clone $query)
-        ->where('status', 'proses')
-        ->count();
-
-    $potensi = (clone $query)
-        ->where('status', 'potensi')
-        ->count();
-
-
-    // =========================
-    // DATA KABUPATEN
-    // =========================
-
-    $kabupaten = Kabupaten::with([
-        'dataKi' => function ($query) use ($jenisKiId) {
-
-            if ($jenisKiId) {
-                $query->where(
-                    'jenis_ki_id',
-                    $jenisKiId
-                );
-            }
-
+        if ($jenisKiId) {
+            $rekapQuery->where('jenis_ki_id', $jenisKiId);
         }
-    ])
-    ->when($kabupatenId, function ($query) use ($kabupatenId) {
+        if ($kabupatenId) {
+            $rekapQuery->where('kabupaten_id', $kabupatenId);
+        }
 
-        $query->where(
-            'id',
-            $kabupatenId
-        );
+        $rekapGrouped = (clone $rekapQuery)
+            ->select('kabupaten_id', 'status', DB::raw('SUM(jumlah) as total'))
+            ->groupBy('kabupaten_id', 'status')
+            ->get();
 
-    })
-    ->get();
-$chartLabels = [];
-$chartData = [];
+        // Rekap jumlah KI per jenis untuk grafik dashboard.
+        $rekapPerJenis = (clone $rekapQuery)
+            ->select('jenis_ki_id', 'status', DB::raw('SUM(jumlah) as total'))
+            ->groupBy('jenis_ki_id', 'status')
+            ->get();
 
-foreach ($kabupaten as $kab) {
+        $terdaftar = (int) $rekapGrouped->where('status', 'terdaftar')->sum('total');
+        $proses = (int) $rekapGrouped->where('status', 'proses')->sum('total');
+        $totalKI = $terdaftar + $proses;
 
-    $totalKabupaten = $kab->dataKi->count();
+        // Potensi ditampilkan terpisah, tidak masuk Total KI terverifikasi.
+        // Pengajuan yang sudah terhubung ke data_ki tidak dihitung ulang.
+        $pengajuanPotensiQuery = DB::table('pengajuan_ki')->whereNull('data_ki_id');
+        if ($jenisKiId) $pengajuanPotensiQuery->where('jenis_ki_id', $jenisKiId);
+        if ($kabupatenId) $pengajuanPotensiQuery->where('kabupaten_id', $kabupatenId);
 
-    $chartLabels[] = $kab->nama_kabupaten;
+        $dataPotensiQuery = DB::table('data_ki')->where('status', 'potensi');
+        if ($jenisKiId) $dataPotensiQuery->where('jenis_ki_id', $jenisKiId);
+        if ($kabupatenId) $dataPotensiQuery->where('kabupaten_id', $kabupatenId);
 
-    $chartData[] = $totalKabupaten;
-}
-$chartLabels = [];
-$chartTerdaftar = [];
-$chartProses = [];
-$chartPotensi = [];
+        $potensi = (int) (clone $pengajuanPotensiQuery)->count()
+            + (int) (clone $dataPotensiQuery)->count();
 
-foreach ($kabupaten as $kab) {
+        $daftarKabupatenQuery = Kabupaten::query()->orderBy('nama_kabupaten');
+        if ($kabupatenId) $daftarKabupatenQuery->where('id', $kabupatenId);
+        $kabupaten = $daftarKabupatenQuery->get();
 
-    $chartLabels[] = $kab->nama_kabupaten;
+        $potensiPengajuanPerKabupaten = (clone $pengajuanPotensiQuery)
+            ->select('kabupaten_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('kabupaten_id')->pluck('total', 'kabupaten_id');
+        $potensiMasterPerKabupaten = (clone $dataPotensiQuery)
+            ->select('kabupaten_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('kabupaten_id')->pluck('total', 'kabupaten_id');
 
-    $chartTerdaftar[] = $kab->dataKi
-        ->where('status', 'terdaftar')
-        ->count();
+        foreach ($kabupaten as $kab) {
+            $kab->total_terdaftar = (int) $rekapGrouped
+                ->where('kabupaten_id', $kab->id)->where('status', 'terdaftar')->sum('total');
+            $kab->total_proses = (int) $rekapGrouped
+                ->where('kabupaten_id', $kab->id)->where('status', 'proses')->sum('total');
+            $kab->total_potensi = (int) $potensiPengajuanPerKabupaten->get($kab->id, 0)
+                + (int) $potensiMasterPerKabupaten->get($kab->id, 0);
+            // Total per kabupaten hanya total terverifikasi.
+            $kab->total_semua = $kab->total_terdaftar + $kab->total_proses;
+        }
 
-    $chartProses[] = $kab->dataKi
-        ->where('status', 'proses')
-        ->count();
+        $chartLabels = $kabupaten->pluck('nama_kabupaten')->values();
+        $chartTerdaftar = $kabupaten->pluck('total_terdaftar')->values();
+        $chartProses = $kabupaten->pluck('total_proses')->values();
+        $chartPotensi = $kabupaten->pluck('total_potensi')->values();
 
-    $chartPotensi[] = $kab->dataKi
-        ->where('status', 'potensi')
-        ->count();
-}
+        $kabupatenTerbanyak = $kabupaten->sortByDesc('total_semua')->first();
+        $jenisKI = JenisKi::orderBy('nama_jenis')->get();
+        foreach ($jenisKI as $jenis) {
+            $jenis->total_terdaftar = (int) $rekapPerJenis
+                ->where('jenis_ki_id', $jenis->id)
+                ->where('status', 'terdaftar')
+                ->sum('total');
+            $jenis->total_proses = (int) $rekapPerJenis
+                ->where('jenis_ki_id', $jenis->id)
+                ->where('status', 'proses')
+                ->sum('total');
+            $jenis->total_terverifikasi = $jenis->total_terdaftar + $jenis->total_proses;
+        }
+        $daftarKabupaten = Kabupaten::orderBy('nama_kabupaten')->get();
+        $kiHariIni = null;
+        $kiBulanIni = null;
 
-    // =========================
-    // FILTER
-    // =========================
-
-    $jenisKI = JenisKi::all();
-
-    $daftarKabupaten = Kabupaten::all();
-$dataDetail = DataKi::with([
-    'jenisKi',
-    'kabupaten'
-])
-->when($jenisKiId, function ($query) use ($jenisKiId) {
-
-    $query->where('jenis_ki_id', $jenisKiId);
-
-})
-->when($kabupatenId, function ($query) use ($kabupatenId) {
-
-    $query->where('kabupaten_id', $kabupatenId);
-
-})
-->orderBy('id', 'desc')
-->get();
-
-    return view('dashboard', compact(
-        'totalKI',
-        'terdaftar',
-        'proses',
-        'potensi',
-        'kabupaten',
-        'jenisKI',
-        'jenisKiId',
-        'daftarKabupaten',
-        'kabupatenId',
-        'chartLabels',
-'chartTerdaftar',
-'chartProses',
-'chartPotensi',
-'dataDetail'
-    ));
-}
+        return view('dashboard', compact(
+            'totalKI', 'terdaftar', 'proses', 'potensi', 'kabupaten', 'jenisKI',
+            'jenisKiId', 'daftarKabupaten', 'kabupatenId', 'tahun', 'chartLabels',
+            'chartTerdaftar', 'chartProses', 'chartPotensi', 'kabupatenTerbanyak',
+            'kiHariIni', 'kiBulanIni', 'tanggalRekapTerbaru'
+        ));
+    }
 }

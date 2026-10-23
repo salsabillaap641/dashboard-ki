@@ -159,7 +159,7 @@
         </div>
     @endif
 
-    <form action="{{ route('data-ki.store') }}" method="POST">
+    <form action="{{ route('data-ki.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="form-grid">
@@ -191,20 +191,29 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="kabupaten_id">Kabupaten/Kota *</label>
-                <select id="kabupaten_id" name="kabupaten_id" required>
-                    <option value="">-- Pilih Kabupaten/Kota --</option>
-                    @foreach ($daftarKabupaten as $kabupaten)
-                        <option
-                            value="{{ $kabupaten->id }}"
-                            @selected(old('kabupaten_id') == $kabupaten->id)
-                        >
-                            {{ $kabupaten->nama_kabupaten }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            
+@if (auth()->user()->role === 'master')
+    <div class="form-group">
+        <label for="kabupaten_id">Kabupaten/Kota *</label>
+        <select id="kabupaten_id" name="kabupaten_id" required>
+            <option value="">-- Pilih Kabupaten/Kota --</option>
+            @foreach ($daftarKabupaten as $kabupaten)
+                <option value="{{ $kabupaten->id }}"
+                    @selected(old('kabupaten_id') == $kabupaten->id)>
+                    {{ $kabupaten->nama_kabupaten }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+@else
+    <div class="form-group">
+        <label>Kabupaten/Kota</label>
+        <input type="text"
+               value="{{ auth()->user()->kabupaten->nama_kabupaten ?? 'Kabupaten belum diatur' }}"
+               readonly>
+    </div>
+@endif
+
 
             <div class="form-group">
                 <label for="pemilik">Nama Pemilik *</label>
@@ -219,23 +228,45 @@
             </div>
 
             <div class="form-group">
-                <label for="status">Status *</label>
-                <select id="status" name="status" required>
-                    <option value="">-- Pilih Status --</option>
-                    <option value="terdaftar"
-                        @selected(old('status') == 'terdaftar')>
-                        Terdaftar
-                    </option>
-                    <option value="proses"
-                        @selected(old('status') == 'proses')>
-                        Dalam Proses
-                    </option>
-                    <option value="potensi"
-                        @selected(old('status') == 'potensi')>
-                        Potensi
-                    </option>
-                </select>
+                <label for="nomor_kontak">Nomor Kontak Pemilik</label>
+                <input
+                    type="tel"
+                    id="nomor_kontak"
+                    name="nomor_kontak"
+                    value="{{ old('nomor_kontak') }}"
+                    placeholder="Contoh: 081234567890"
+                    maxlength="25"
+                >
+                @error('nomor_kontak')
+                    <small class="field-error">{{ $message }}</small>
+                @enderror
             </div>
+
+            
+<div class="form-group">
+    <label for="status">Status</label>
+
+    @if (auth()->user()->role === 'master')
+        <select id="status" name="status" required>
+            <option value="">-- Pilih Status --</option>
+            <option value="terdaftar"
+                @selected(old('status') == 'terdaftar')>
+                Terdaftar
+            </option>
+            <option value="proses"
+                @selected(old('status') == 'proses')>
+                Dalam Proses
+            </option>
+            <option value="potensi"
+                @selected(old('status') == 'potensi')>
+                Potensi
+            </option>
+        </select>
+    @else
+        <input type="text" value="Potensi" readonly>
+    @endif
+</div>
+
 
             <div class="form-group">
                 <label for="tahun">Tahun *</label>
@@ -277,6 +308,21 @@
                     name="keterangan"
                     placeholder="Tambahkan keterangan jika diperlukan"
                 >{{ old('keterangan') }}</textarea>
+            </div>
+
+            <div class="form-group full">
+                    <label for="bukti_pendukung">Bukti Pendukung (JPG, PNG, atau PDF) {{ auth()->user()->role === 'kabupaten' ? '*' : '(opsional)' }}</label>
+                    <input
+                        type="file"
+                        id="bukti_pendukung"
+                        name="bukti_pendukung"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        {{ auth()->user()->role === 'kabupaten' ? 'required' : '' }}
+                    >
+                    <small style="color:#6b7280;">Unggah satu file saja, maksimal 2 MB.</small>
+                    @error('bukti_pendukung')
+                        <small class="field-error">{{ $message }}</small>
+                    @enderror
             </div>
 
         </div>

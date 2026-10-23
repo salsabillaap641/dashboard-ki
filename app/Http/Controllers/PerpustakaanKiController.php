@@ -8,6 +8,7 @@ use App\Models\Kabupaten;
 use Illuminate\Http\Request;
 use App\Models\DataKi;
 
+
 class PerpustakaanKiController extends Controller
 {
     public function index(Request $request)
@@ -115,6 +116,64 @@ public function store(Request $request)
     return redirect()
         ->route('perpustakaan-ki.index')
         ->with('success', 'Data berhasil ditambahkan ke Perpustakaan KI.');
+}
+
+
+public function edit($id)
+{
+    $perpustakaanKi = PerpustakaanKi::with([
+        'dataKi',
+        'jenisKi',
+        'kabupaten'
+    ])->findOrFail($id);
+
+    return view('edit-perpustakaan-ki', compact('perpustakaanKi'));
+}
+
+public function update(Request $request, $id)
+{
+    $perpustakaanKi = PerpustakaanKi::findOrFail($id);
+
+    $validated = $request->validate([
+        'nomor_hak' => [
+            'required',
+            'string',
+            'max:255',
+            \Illuminate\Validation\Rule::unique(
+                'perpustakaan_ki',
+                'nomor_hak'
+            )->ignore($perpustakaanKi->id),
+        ],
+    ]);
+
+    $perpustakaanKi->update($validated);
+
+    return redirect()
+        ->route('perpustakaan-ki.index')
+        ->with('success', 'Data Perpustakaan KI berhasil diperbarui.');
+}
+
+public function destroy($id)
+{
+    $perpustakaanKi = PerpustakaanKi::findOrFail($id);
+    $perpustakaanKi->delete();
+
+    return redirect()
+        ->route('perpustakaan-ki.index')
+        ->with('success', 'Data berhasil dihapus dari Perpustakaan KI.');
+}
+
+
+public function show($id)
+{
+    $item = PerpustakaanKi::with([
+        'dataKi.jenisKi',
+        'dataKi.kabupaten',
+        'jenisKi',
+        'kabupaten',
+    ])->findOrFail($id);
+
+    return view('detail-perpustakaan-ki', compact('item'));
 }
 
 }

@@ -301,10 +301,16 @@
             </p>
         </div>
 
+        
+@auth
+    @if (auth()->user()->role === 'master')
         <a href="{{ route('perpustakaan-ki.create') }}"
            class="library-btn library-btn-primary">
             + Tambah Data KI
         </a>
+    @endif
+@endauth
+
     </div>
 
     <div class="library-card">
@@ -378,6 +384,7 @@
                         <th>Nomor Hak</th>
                         <th>Jenis Hak</th>
                         <th>Kabupaten/Kota</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
 
@@ -403,6 +410,43 @@
                             <td>
                                 {{ $item->kabupaten->nama_kabupaten ?? '-' }}
                             </td>
+
+
+<td style="white-space: nowrap;">
+    <a href="{{ route('perpustakaan-ki.show', $item->id) }}"
+       class="library-btn library-btn-secondary"
+       style="min-height: 32px; padding: 6px 10px;">
+        Detail
+    </a>
+
+    @auth
+        @if (auth()->user()->role === 'master')
+            <a href="{{ route('perpustakaan-ki.edit', $item->id) }}"
+               style="display: inline-block; padding: 7px 12px;
+                      background: #dbeafe; color: #1d4ed8;
+                      border-radius: 6px; text-decoration: none;">
+                Edit
+            </a>
+
+            <form action="{{ route('perpustakaan-ki.destroy', $item->id) }}"
+                  method="POST"
+                  style="display: inline-block;"
+                  onsubmit="return confirm('Yakin ingin menghapus data ini dari Perpustakaan KI?')">
+                @csrf
+                @method('DELETE')
+
+                <button type="submit"
+                        style="padding: 7px 12px; background: #fee2e2;
+                               color: #b91c1c; border: 0;
+                               border-radius: 6px; cursor: pointer;">
+                    Hapus
+                </button>
+            </form>
+        @endif
+    @endauth
+</td>
+
+
                         </tr>
                     @empty
                         <tr>
@@ -414,6 +458,7 @@
                             </td>
                         </tr>
                     @endforelse
+                    
                 </tbody>
             </table>
         </div>

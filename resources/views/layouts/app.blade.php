@@ -153,27 +153,64 @@
 
         <div class="menu-label">MENU UTAMA</div>
 
-        <nav class="menu">
-            <a href="{{ url('/') }}"
-               class="{{ request()->is('/') ? 'active' : '' }}">
-                <span>▦</span> Dashboard
-            </a>
+        
+<nav class="menu">
 
-            <a href="{{ url('/data-ki') }}"
-               class="{{ request()->is('data-ki') ? 'active' : '' }}">
-                <span>▤</span> Data KI
-            </a>
+    <a href="/">Dashboard</a>
+    <a href="{{ route('potensi-ki.index') }}" class="{{ request()->routeIs('potensi-ki.*') ? 'active' : '' }}">Potensi KI</a>
 
-            <a href="{{ url('/input-ki') }}"
-               class="{{ request()->is('input-ki') ? 'active' : '' }}">
-                <span>＋</span> Input Data KI
-            </a>
+    
+    @auth
+        @if(auth()->user()->role === 'master')
+    <a href="{{ route('data-ki.index') }}">Data KI</a>
+    <a href="{{ route('users.index') }}">Manajemen User</a>
+    <a href="{{ route('penelaahan-ki.index') }}">
+    Penelaahan Potensi KI
+</a>
 
-            <a href="{{ url('/perpustakaan-ki') }}"
-               class="{{ request()->is('perpustakaan-ki') ? 'active' : '' }}">
-                <span>▣</span> Perpustakaan KI
-            </a>
-        </nav>
+{{-- Menu Rekap KI khusus Master --}}
+@if (auth()->check() && auth()->user()->role === 'master')
+    <a href="{{ route('rekap-ki.index') }}"
+       class="sidebar-link {{ request()->routeIs('rekap-ki.*') ? 'active' : '' }}">
+        <i class="bi bi-bar-chart-line"></i>
+        <span>Rekap KI</span>
+    </a>
+@endif
+
+@endif
+@if(auth()->user()->role === 'kabupaten')
+    <a href="{{ route('pengajuan-saya') }}">Pengajuan Saya</a>
+@endif
+        <a href="{{ route('data-ki.create') }}">Input Data KI</a>
+        
+    @endauth
+
+    <a href="{{ route('perpustakaan-ki.index') }}">
+        Perpustakaan KI
+    </a>
+    <a href="{{ route('sentra-ki.index') }}" class="{{ request()->routeIs('sentra-ki.*') ? 'active' : '' }}">Sentra KI</a>
+
+    <a href="{{ route('jenis-ki') }}">Jenis-Jenis KI</a>
+    
+
+    @auth
+        <form action="{{ route('logout') }}" method="POST"
+              style="margin-top: 20px; padding: 0 12px;">
+            @csrf
+            <button type="submit"
+                    style="width: 100%; padding: 11px; border: none;
+                           border-radius: 8px; cursor: pointer;
+                           background: #ffffff20; color: white;
+                           text-align: left; font-size: 14px;">
+                Logout
+            </button>
+        </form>
+    @else
+        <a href="{{ route('login') }}">Login</a>
+    @endauth
+
+</nav>
+
 
     </aside>
 

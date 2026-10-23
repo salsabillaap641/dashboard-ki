@@ -163,7 +163,7 @@
                         <th>Tanggal Pengajuan</th>
                         <th>Keterangan</th>
                         <th>Aksi</th>
-                        <th>Aksi</th>
+                        <th>Perpustakaan</th>
                     </tr>
                 </thead>
 
@@ -202,6 +202,10 @@
 
 
                             <td style="white-space:nowrap;">
+                                <a href="{{ route('data-ki.show', $ki->id) }}"
+                                    style="display:inline-block;padding:7px 10px;background:#e0f2fe;color:#075985;border-radius:6px;text-decoration:none;margin-right:4px;">
+                                    Detail
+                                </a>
                                 <a href="{{ route('data-ki.edit', $ki->id) }}"
                                     style="display:inline-block;padding:7px 10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;text-decoration:none;">
                                     Edit
@@ -246,7 +250,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" style="text-align: center; padding: 30px;">
+                            <td colspan="11" style="text-align: center; padding: 30px;">
                                 Belum ada data KI yang tersimpan.
                             </td>
                         </tr>
