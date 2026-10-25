@@ -180,7 +180,7 @@
 
 @endif
 @if(auth()->user()->role === 'kabupaten')
-    <a href="{{ route('pengajuan-saya') }}">Pengajuan Saya</a>
+    <a href="{{ route('pengajuan-saya') }}">Pengajuan KI</a>
 @endif
         <a href="{{ route('data-ki.create') }}">Input Data KI</a>
         
