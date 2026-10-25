@@ -10,9 +10,13 @@ use App\Http\Controllers\PenelaahanKiController;
 use App\Http\Controllers\RekapKiController;
 use App\Http\Controllers\SentraKiController;
 use App\Http\Controllers\PotensiKiController;
+use App\Http\Controllers\KontakPersonController;
+use App\Http\Controllers\GaleriKiController;
 
 // Halaman publik
 Route::get('/', [DashboardController::class, 'index']);
+Route::get('/kontak-person', [KontakPersonController::class, 'index'])->name('kontak-person.index');
+Route::get('/galeri-ki', [GaleriKiController::class, 'index'])->name('galeri-ki.index');
 
 // Sentra KI dapat dilihat tanpa login.
 Route::get('/sentra-ki', [SentraKiController::class, 'index'])->name('sentra-ki.index');
@@ -141,11 +145,21 @@ Route::post('/rekap-ki', [RekapKiController::class, 'store'])
 
 
 
+    // Pengelolaan kontak person khusus Master
+    Route::get('/kontak-person/edit', [KontakPersonController::class, 'edit'])->name('kontak-person.edit');
+    Route::put('/kontak-person', [KontakPersonController::class, 'update'])->name('kontak-person.update');
+
     // Pengelolaan Sentra KI khusus Master
     Route::get('/sentra-ki/create', [SentraKiController::class, 'create'])->name('sentra-ki.create');
     Route::post('/sentra-ki', [SentraKiController::class, 'store'])->name('sentra-ki.store');
     Route::get('/sentra-ki/{sentraKi}/edit', [SentraKiController::class, 'edit'])->name('sentra-ki.edit');
     Route::put('/sentra-ki/{sentraKi}', [SentraKiController::class, 'update'])->name('sentra-ki.update');
     Route::delete('/sentra-ki/{sentraKi}', [SentraKiController::class, 'destroy'])->name('sentra-ki.destroy');
+
+    Route::get('/galeri-ki/create', [GaleriKiController::class, 'create'])->name('galeri-ki.create');
+Route::post('/galeri-ki', [GaleriKiController::class, 'store'])->name('galeri-ki.store');
+Route::get('/galeri-ki/{galeriKi}/edit', [GaleriKiController::class, 'edit'])->name('galeri-ki.edit');
+Route::put('/galeri-ki/{galeriKi}', [GaleriKiController::class, 'update'])->name('galeri-ki.update');
+Route::delete('/galeri-ki/{galeriKi}', [GaleriKiController::class, 'destroy'])->name('galeri-ki.destroy');
 
 });

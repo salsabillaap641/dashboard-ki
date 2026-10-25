@@ -157,9 +157,14 @@ public function pengajuanSaya(Request $request)
 
     public function index(Request $request)
     {
+        // Relasi perpustakaan_ki.data_ki_id sudah tidak digunakan.
+        // Cocokkan data perpustakaan berdasarkan nama HAKI dengan nama KI.
         $query = DataKi::with(['jenisKi', 'kabupaten'])
-            ->withExists([
-                'perpustakaanKi as sudah_di_perpustakaan'
+            ->addSelect([
+                'sudah_di_perpustakaan' => DB::table('perpustakaan_ki')
+                    ->selectRaw('1')
+                    ->whereRaw('perpustakaan_ki.nama_hak COLLATE utf8mb4_unicode_ci = data_ki.nama_ki COLLATE utf8mb4_unicode_ci')
+                    ->limit(1),
             ]);
 
         // Pencarian nama KI atau pemilik
@@ -366,13 +371,11 @@ public function edit(Request $request, $id)
 );
         $dataKI = DataKi::findOrFail($id);
 
-        // Hapus data perpustakaan yang terhubung dengan Data KI ini
-        PerpustakaanKi::where('data_ki_id', $dataKI->id)->delete();
-
-        // Hapus Data KI
+        // Data Perpustakaan KI sekarang berdiri sendiri dan tidak lagi
+        // terhubung melalui kolom data_ki_id, jadi jangan hapus data perpustakaan.
         $dataKI->delete();
 
         return redirect()->route('data-ki.index')
-            ->with('success', 'Data KI dan data Perpustakaan KI terkait berhasil dihapus.');
+            ->with('success', 'Data KI berhasil dihapus. Data Perpustakaan KI tidak diubah.');
     }
 }

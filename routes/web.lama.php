@@ -8,14 +8,20 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\PenelaahanKiController;
 use App\Http\Controllers\RekapKiController;
+use App\Http\Controllers\SentraKiController;
 use App\Http\Controllers\PotensiKiController;
 
 // Halaman publik
 Route::get('/', [DashboardController::class, 'index']);
-Route::get('/potensi-ki', [PotensiKiController::class, 'index'])->name('potensi-ki.index');
+
+// Sentra KI dapat dilihat tanpa login.
+Route::get('/sentra-ki', [SentraKiController::class, 'index'])->name('sentra-ki.index');
 
 Route::get('/perpustakaan-ki', [PerpustakaanKiController::class, 'index'])
     ->name('perpustakaan-ki.index');
+
+    Route::get('/potensi-ki', [PotensiKiController::class, 'index'])
+    ->name('potensi-ki.index');
 
 
 Route::get('/perpustakaan-ki/{id}', [
@@ -68,9 +74,6 @@ Route::middleware(['auth', 'role:master'])->group(function () {
     Route::get('/data-ki', [DataKiController::class, 'index'])
         ->name('data-ki.index');
 
-    Route::get('/data-ki/{id}', [DataKiController::class, 'show'])
-        ->name('data-ki.show');
-
     Route::get('/data-ki/{id}/edit', [DataKiController::class, 'edit'])
         ->name('data-ki.edit');
 
@@ -79,6 +82,9 @@ Route::middleware(['auth', 'role:master'])->group(function () {
 
     Route::delete('/data-ki/{id}', [DataKiController::class, 'destroy'])
         ->name('data-ki.destroy');
+        
+        Route::get('/data-ki/{dataKi}', [DataKiController::class, 'show'])
+    ->name('data-ki.show');
 
     Route::get('/input-perpustakaan-ki', [PerpustakaanKiController::class, 'create'])
         ->name('perpustakaan-ki.create');
@@ -133,5 +139,13 @@ Route::get('/rekap-ki', [RekapKiController::class, 'index'])
 Route::post('/rekap-ki', [RekapKiController::class, 'store'])
     ->name('rekap-ki.store');
 
+
+
+    // Pengelolaan Sentra KI khusus Master
+    Route::get('/sentra-ki/create', [SentraKiController::class, 'create'])->name('sentra-ki.create');
+    Route::post('/sentra-ki', [SentraKiController::class, 'store'])->name('sentra-ki.store');
+    Route::get('/sentra-ki/{sentraKi}/edit', [SentraKiController::class, 'edit'])->name('sentra-ki.edit');
+    Route::put('/sentra-ki/{sentraKi}', [SentraKiController::class, 'update'])->name('sentra-ki.update');
+    Route::delete('/sentra-ki/{sentraKi}', [SentraKiController::class, 'destroy'])->name('sentra-ki.destroy');
 
 });

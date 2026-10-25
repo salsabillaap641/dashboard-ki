@@ -26,6 +26,7 @@
             left: 0;
             width: 240px;
             height: 100vh;
+            overflow-y: auto;
             background: #173d68;
             color: white;
             padding: 24px 16px;
@@ -189,8 +190,10 @@
         Perpustakaan KI
     </a>
     <a href="{{ route('sentra-ki.index') }}" class="{{ request()->routeIs('sentra-ki.*') ? 'active' : '' }}">Sentra KI</a>
+    <a href="{{ route('galeri-ki.index') }}" class="{{ request()->routeIs('galeri-ki.*') ? 'active' : '' }}">Galeri Produk KI</a>
 
     <a href="{{ route('jenis-ki') }}">Jenis-Jenis KI</a>
+    <a href="{{ route('kontak-person.index') }}" class="{{ request()->routeIs('kontak-person.*') ? 'active' : '' }}">Kontak Person Kanwil</a>
     
 
     @auth

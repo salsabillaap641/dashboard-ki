@@ -1,0 +1,6 @@
+@extends('layouts.app')
+@section('title','Edit Produk KI')
+@section('content')
+<style>.gallery-form-wrap{max-width:850px;margin:auto;color:#203956}.gallery-form-card{background:#fff;border:1px solid #e5ebf3;border-radius:14px;padding:26px}.gallery-form-wrap h1{color:#173d68}.gallery-field{margin:0 0 18px}.gallery-field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}.gallery-field input:not([type=checkbox]),.gallery-field select,.gallery-field textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #dbe3ed;border-radius:8px;font:inherit}.gallery-field textarea{min-height:110px;resize:vertical}.gallery-field small{display:block;color:#dc2626;margin-top:5px}.gallery-btn{display:inline-block;background:#173d68;color:white;text-decoration:none;border:1px solid #173d68;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer}.gallery-btn.secondary{background:white;color:#334155;border-color:#dbe3ed}</style>
+<div class="gallery-form-wrap"><h1>Edit Produk KI</h1><p>Perbarui foto, jenis, atau caption produk.</p><div class="gallery-form-card"><form action="{{ route('galeri-ki.update',$galeriKi) }}" method="POST" enctype="multipart/form-data">@csrf @method('PUT') @include('galeri-ki.form')</form></div></div>
+@endsection

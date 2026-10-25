@@ -1,1353 +1,331 @@
 @extends('layouts.app')
-
 @section('title', 'Dashboard KI Kalteng')
-
 @push('styles')
-    <style>
-        .last-update-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            color: #64748b;
-            font-size: 13px;
-            font-weight: 500;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
-        }
-
-        .last-update-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #22c55e;
-            flex-shrink: 0;
-        }
-
-        .dashboard {
-            width: 100%;
-            max-width: none;
-            margin: 0;
-        }
-
-        .dashboard-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 16px;
-            margin-bottom: 22px;
-        }
-
-        .dashboard-heading h1 {
-            margin: 0;
-            color: #173d68;
-            font-size: 30px;
-            font-weight: 750;
-            letter-spacing: -.5px;
-        }
-
-        .dashboard-heading p {
-            margin: 7px 0 0;
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .dashboard-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            color: #2563eb;
-            background: #eff6ff;
-            padding: 7px 11px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .panel {
-            background: #fff;
-            border: 1px solid #e9eef5;
-            border-radius: 15px;
-            box-shadow: 0 4px 16px rgba(22, 48, 79, .045);
-        }
-
-        .filter-panel {
-            padding: 19px 20px;
-            margin-bottom: 20px;
-        }
-
-        .filter-form {
-            display: grid;
-            grid-template-columns: minmax(190px, 1fr) minmax(190px, 1fr) auto auto;
-            gap: 14px;
-            align-items: end;
-        }
-
-        .filter-field {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .filter-field label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #34445c;
-        }
-
-        .filter-field select {
-            width: 100%;
-            min-height: 43px;
-            border: 1px solid #dce4ee;
-            border-radius: 8px;
-            padding: 10px 12px;
-            background: #fff;
-            color: #263449;
-            font: inherit;
-            font-size: 13px;
-        }
-
-        .filter-btn {
-            min-height: 43px;
-            padding: 0 18px;
-            border: 0;
-            border-radius: 8px;
-            background: #173d68;
-            color: #fff;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .filter-reset {
-            min-height: 43px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 17px;
-            border: 1px solid #dce4ee;
-            border-radius: 8px;
-            color: #475569;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .filter-btn:hover {
-            background: #102f52;
-        }
-
-        .filter-reset:hover {
-            background: #f8fafc;
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .kpi-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 20px;
-            min-width: 0;
-        }
-
-        .kpi-icon {
-            width: 49px;
-            height: 49px;
-            flex: 0 0 49px;
-            display: grid;
-            place-items: center;
-            border-radius: 13px;
-            font-size: 23px;
-            font-weight: 800;
-        }
-
-        .kpi-icon.blue {
-            background: #e8f2ff;
-            color: #2474d8;
-        }
-
-        .kpi-icon.green {
-            background: #e4f9ed;
-            color: #159455;
-        }
-
-        .kpi-icon.amber {
-            background: #fff4d8;
-            color: #d97706;
-        }
-
-        .kpi-icon.purple {
-            background: #f2eaff;
-            color: #8954d8;
-        }
-
-        .kpi-title {
-            color: #64748b;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .kpi-number {
-            color: #173d68;
-            font-size: 29px;
-            font-weight: 800;
-            line-height: 1.15;
-        }
-
-        .kpi-note {
-            margin-top: 5px;
-            color: #94a3b8;
-            font-size: 11px;
-        }
-
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.8fr) minmax(300px, .9fr);
-            gap: 16px;
-            margin-bottom: 20px;
-            align-items: stretch;
-        }
-
-        .chart-panel.potensi-chart-panel {
-            grid-column: 1 / -1;
-        }
-
-        .chart-panel {
-            padding: 21px 22px;
-            min-width: 0;
-        }
-
-        .panel-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .panel-heading h2 {
-            margin: 0;
-            color: #173d68;
-            font-size: 17px;
-            font-weight: 750;
-        }
-
-        .panel-heading p {
-            margin: 5px 0 0;
-            color: #94a3b8;
-            font-size: 12px;
-        }
-
-        .chart-area {
-            position: relative;
-            height: 310px;
-        }
-
-        .donut-area {
-            position: relative;
-            height: 260px;
-        }
-
-        .table-panel {
-            padding: 21px 22px;
-            margin-bottom: 20px;
-        }
-
-        .table-action {
-            padding: 9px 13px;
-            border-radius: 8px;
-            background: #173d68;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-
-        .table-wrap {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .dashboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            white-space: nowrap;
-        }
-
-        .dashboard-table th {
-            background: #f7f9fc;
-            color: #526176;
-            font-size: 11px;
-            font-weight: 700;
-            text-align: left;
-            padding: 13px 12px;
-            border-bottom: 1px solid #e8edf4;
-        }
-
-        .dashboard-table td {
-            color: #475569;
-            font-size: 12px;
-            padding: 13px 12px;
-            border-bottom: 1px solid #edf1f6;
-        }
-
-        .dashboard-table tbody tr:hover {
-            background: #f8fbff;
-        }
-
-        .dashboard-table tbody tr:last-child td {
-            border-bottom: 0;
-        }
-
-        .number-cell {
-            color: #173d68 !important;
-            font-weight: 800;
-        }
-
-        .status-pill {
-            display: inline-block;
-            padding: 5px 9px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .status-pill.terdaftar {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-pill.proses {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-pill.potensi {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .empty-row {
-            text-align: center !important;
-            color: #94a3b8 !important;
-            padding: 28px !important;
-        }
-
-        @media (max-width:1100px) {
-            .kpi-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .analytics-grid {
-                grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
-            }
-        }
-
-        @media (max-width:760px) {
-            .dashboard-heading {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .dashboard-heading h1 {
-                font-size: 25px;
-            }
-
-            .filter-form {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .chart-area {
-                height: 280px;
-            }
-
-            .donut-area {
-                height: 250px;
-            }
-
-            .chart-panel,
-            .table-panel {
-                padding: 17px;
-            }
-        }
-
-        @media (max-width:480px) {
-            .kpi-grid {
-                grid-template-columns: 1fr;
-                gap: 11px;
-            }
-
-            .kpi-card {
-                padding: 16px;
-            }
-
-            .filter-form {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-btn,
-            .filter-reset {
-                width: 100%;
-            }
-        }
-
-
-        .ki-slider {
-            position: relative;
-            width: 100%;
-            min-height: 310px;
-            margin: 24px 0;
-            overflow: hidden;
-            border-radius: 18px;
-            background: linear-gradient(115deg, #102f55, #174a78 65%, #2475a5);
-            color: #fff;
-            box-shadow: 0 10px 30px rgba(15, 45, 80, .12);
-        }
-
-        .ki-slide {
-            display: none;
-            min-height: 310px;
-            box-sizing: border-box;
-            padding: 34px 76px 48px 38px;
-            grid-template-columns: minmax(0, 1.5fr) minmax(180px, .7fr);
-            align-items: center;
-            gap: 28px;
-            animation: kiFade .45s ease;
-        }
-
-        .ki-slide.active {
-            display: grid;
-        }
-
-        .ki-slide-content {
-            min-width: 0;
-            position: relative;
-            z-index: 2;
-        }
-
-        .ki-eyebrow {
-            display: inline-block;
-            margin-bottom: 12px;
-            color: #a8dcff;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-        }
-
-        .ki-slide h2 {
-            margin: 0 0 12px;
-            color: #fff;
-            font-size: clamp(23px, 2.3vw, 34px);
-            line-height: 1.2;
-            letter-spacing: -.6px;
-        }
-
-        .ki-slide p {
-            max-width: 560px;
-            margin: 0;
-            color: #d8e8f7;
-            font-size: 14px;
-            line-height: 1.7;
-        }
-
-        .ki-stats {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 24px;
-        }
-
-        .ki-stats>div,
-        .ki-growth-card,
-        .ki-region-card {
-            padding: 13px 15px;
-            border: 1px solid rgba(255, 255, 255, .17);
-            border-radius: 11px;
-            background: rgba(255, 255, 255, .09);
-            backdrop-filter: blur(8px);
-        }
-
-        .ki-stats span,
-        .ki-growth-card span,
-        .ki-region-card span {
-            display: block;
-            color: #d8e8f7;
-            font-size: 11px;
-        }
-
-        .ki-stats strong {
-            display: block;
-            margin-top: 7px;
-            color: #fff;
-            font-size: 25px;
-        }
-
-        .ki-growth {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 22px;
-        }
-
-        .ki-growth-card {
-            min-width: 145px;
-        }
-
-        .ki-growth-card strong,
-        .ki-region-card strong {
-            display: block;
-            margin: 7px 0;
-            color: #fff;
-            font-size: 26px;
-        }
-
-        .ki-growth-card small,
-        .ki-region-card small {
-            color: #bfe4ff;
-            font-size: 11px;
-        }
-
-        .ki-region-card {
-            margin-top: 22px;
-            max-width: 370px;
-        }
-
-        .ki-region-card strong {
-            font-size: 21px;
-        }
-
-        .ki-visual {
-            min-height: 190px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .ki-circle,
-        .region-ring {
-            position: absolute;
-            border: 1px solid rgba(255, 255, 255, .2);
-            border-radius: 50%;
-        }
-
-        .circle-one {
-            width: 205px;
-            height: 205px;
-            background: rgba(255, 255, 255, .035);
-        }
-
-        .circle-two {
-            width: 145px;
-            height: 145px;
-            background: rgba(119, 205, 255, .09);
-        }
-
-        .ki-visual-icon {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid rgba(255, 255, 255, .8);
-            border-radius: 25px;
-            background: rgba(255, 255, 255, .12);
-            color: #fff;
-            font-size: 36px;
-            font-weight: 900;
-            transform: rotate(-7deg);
-        }
-
-        .ki-visual-caption {
-            position: absolute;
-            bottom: 0;
-            color: #bfe4ff;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 3px;
-        }
-
-        .mini-bar {
-            position: absolute;
-            bottom: 25px;
-            width: 24px;
-            border-radius: 6px 6px 0 0;
-            background: linear-gradient(#9bdcff, #3e9ddd);
-        }
-
-        .bar-a {
-            height: 45px;
-            left: 12%;
-        }
-
-        .bar-b {
-            height: 75px;
-            left: 29%;
-        }
-
-        .bar-c {
-            height: 60px;
-            left: 46%;
-        }
-
-        .bar-d {
-            height: 110px;
-            left: 63%;
-        }
-
-        .bar-e {
-            height: 145px;
-            left: 80%;
-        }
-
-        .growth-line {
-            position: absolute;
-            top: 15px;
-            right: 10%;
-            color: #a8dcff;
-            font-size: 45px;
-        }
-
-        .region-ring.ring-one {
-            width: 210px;
-            height: 210px;
-            border-style: dashed;
-        }
-
-        .region-ring.ring-two {
-            width: 145px;
-            height: 145px;
-            background: rgba(255, 255, 255, .06);
-        }
-
-        .region-symbol {
-            color: #fff;
-            font-size: 90px;
-            line-height: 1;
-        }
-
-        .ki-arrow {
-            position: absolute;
-            top: 45%;
-            z-index: 3;
-            width: 36px;
-            height: 36px;
-            border: 1px solid rgba(255, 255, 255, .35);
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .12);
-            color: #fff;
-            font-size: 25px;
-            line-height: 1;
-            cursor: pointer;
-            transition: background .2s;
-        }
-
-        .ki-arrow:hover {
-            background: rgba(255, 255, 255, .28);
-        }
-
-        .ki-prev {
-            left: 12px;
-        }
-
-        .ki-next {
-            right: 12px;
-        }
-
-        .ki-dots {
-            position: absolute;
-            bottom: 17px;
-            left: 0;
-            right: 0;
-            z-index: 4;
-            display: flex;
-            justify-content: center;
-            gap: 7px;
-        }
-
-        .ki-dot {
-            width: 7px;
-            height: 7px;
-            padding: 0;
-            border: 0;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, .4);
-            cursor: pointer;
-            transition: width .2s, background .2s;
-        }
-
-        .ki-dot.active {
-            width: 23px;
-            background: #fff;
-        }
-
-        @keyframes kiFade {
-            from {
-                opacity: .4;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 850px) {
-            .ki-slide {
-                grid-template-columns: 1fr;
-                padding: 28px 55px 48px 24px;
-                gap: 10px;
-            }
-
-            .ki-visual {
-                display: none;
-            }
-
-            .ki-stats {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 480px) {
-
-            .ki-slider,
-            .ki-slide {
-                min-height: 360px;
-            }
-
-            .ki-stats strong {
-                font-size: 21px;
-            }
-
-            .ki-growth-card {
-                min-width: 0;
-                flex: 1;
-            }
-        }
-    
-    .jenis-ki-panel { margin-top: 24px; }
-    .jenis-ki-chart-area { position: relative; height: 430px; padding: 8px 20px 8px 12px; }
-    .jenis-ki-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; padding:0 18px 20px; }
-    .jenis-ki-summary-item { display:flex; flex-direction:column; gap:8px; padding:14px 16px; background:#f7faff; border:1px solid #e8eef7; border-radius:12px; }
-    .jenis-ki-name { color:#64748b; font-size:12px; font-weight:600; }
-    .jenis-ki-summary-item strong { color:#173d68; font-size:22px; font-weight:800; }
-    @media(max-width:640px) { .jenis-ki-chart-area { height:360px; padding:8px 12px 8px 4px; } .jenis-ki-summary { padding:0 12px 16px; grid-template-columns:repeat(2,minmax(0,1fr)); } }
-
+<style>
+.ki-dash{display:grid;gap:16px;color:#17365e}.ki-panel{background:#fff;border:1px solid #e8eef6;border-radius:12px;box-shadow:0 3px 12px rgba(18,48,80,.045);padding:17px;min-width:0}
+.ki-filter{padding:16px 18px}.ki-filter-form{display:grid;grid-template-columns:1fr 1fr auto auto;gap:12px;align-items:end}.ki-field label{display:block;font-size:12px;font-weight:700;color:#435773;margin-bottom:7px}.ki-field select{width:100%;min-height:40px;border:1px solid #dce5ef;border-radius:8px;padding:9px 11px;background:white;color:#203b5e}.ki-btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 15px;border-radius:8px;border:0;background:#1e5a9d;color:#fff;text-decoration:none;font-size:12px;font-weight:750;cursor:pointer}.ki-btn.light{background:#fff;color:#39536f;border:1px solid #dce5ef}
+.ki-hero{position:relative;overflow:hidden;border-radius:13px;min-height:265px;color:white;background:linear-gradient(100deg,#092a50 0%,#123f70 48%,#246d98 100%)}.ki-hero:after{content:"KI";position:absolute;right:8%;top:13%;width:180px;height:180px;border:1px solid #ffffff40;border-radius:50%;display:grid;place-items:center;font-size:62px;font-weight:900;color:#ffffffc7;box-shadow:0 0 0 28px #ffffff0b,0 0 0 55px #ffffff08}.ki-hero-copy{position:relative;z-index:1;max-width:690px;padding:31px 44px}.ki-kicker{font-size:11px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#b5dfff;margin-bottom:14px}.ki-hero h1{margin:0 0 10px;color:white;font-size:clamp(28px,3vw,42px);line-height:1.13;letter-spacing:-.7px}.ki-hero p{margin:0;color:#e0edfb;font-size:14px;line-height:1.6}.ki-hero-link{display:inline-flex;margin-top:19px;background:white;color:#143b65;text-decoration:none;font-size:12px;font-weight:800;padding:11px 16px;border-radius:8px;gap:10px;align-items:center}.ki-hero-controls{position:absolute;right:17px;bottom:15px;display:flex;gap:5px}.ki-hero-controls button{width:8px;height:8px;padding:0;border:0;border-radius:10px;background:#ffffff70}.ki-hero-controls button.active{width:22px;background:white}
+.ki-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.ki-kpi{display:flex;gap:12px;align-items:center;padding:16px}.ki-kpi-icon{width:42px;height:42px;border-radius:50%;flex:0 0 42px;display:grid;place-items:center;font-size:20px;font-weight:900}.ki-kpi-icon.blue{background:#e7f0ff;color:#3479d7}.ki-kpi-icon.green{background:#e3f7eb;color:#28a35e}.ki-kpi-icon.amber{background:#fff1d2;color:#ec9b17}.ki-kpi-icon.pink{background:#ffe4ed;color:#ed4b79}.ki-kpi-label{font-size:12px;color:#526985}.ki-kpi-value{font-size:26px;font-weight:850;line-height:1.25;color:#10345e}.ki-kpi-note{font-size:10px;color:#8191a6;margin-top:4px}
+.ki-main-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.95fr) minmax(245px,.85fr);gap:14px;align-items:stretch}.ki-panel-title{font-size:14px;font-weight:850;margin:0;color:#123862}.ki-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px}.ki-chart{height:245px;position:relative}.ki-status-content{display:grid;grid-template-columns:1fr;gap:8px}.ki-donut{height:180px;position:relative}.ki-legend{display:grid;gap:9px}.ki-legend-row{display:flex;align-items:center;gap:7px;font-size:11px;color:#60748c}.ki-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}.ki-legend-row strong{margin-left:auto;color:#183a60}
+.ki-news{display:grid;gap:12px}.ki-news-row{display:flex;gap:10px;align-items:center}.ki-news-thumb{width:67px;height:57px;flex:0 0 67px;border-radius:8px;background:linear-gradient(135deg,#d9e8f5,#9cb8d2);display:grid;place-items:center;color:#2e5d8d;font-size:21px}.ki-news-title{font-size:11px;line-height:1.45;font-weight:800;color:#244465}.ki-news-sub{font-size:10px;color:#8493a5;margin-top:4px}
+.ki-bottom{display:grid;grid-template-columns:minmax(0,2fr) minmax(250px,.85fr);gap:14px}.ki-products{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.ki-product-img{height:105px;border-radius:8px;background:#eef3f8;overflow:hidden;display:grid;place-items:center;color:#7890aa;font-size:25px}.ki-product-img img{width:100%;height:100%;object-fit:cover}.ki-product-title{font-size:11px;font-weight:800;line-height:1.4;margin:7px 0;color:#1f3e60;overflow-wrap:anywhere}.ki-product-type{display:inline-block;border-radius:99px;background:#eaf2ff;color:#285b95;padding:4px 7px;font-size:10px}.ki-empty{font-size:12px;color:#7b8ca1;line-height:1.6}.ki-sentra-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:23px 25px;min-height:130px;text-decoration:none;color:white;background:linear-gradient(105deg,#12355f,#1d6490);border-radius:12px;overflow:hidden;position:relative}.ki-sentra-banner:after{content:"";position:absolute;right:8%;width:120px;height:120px;border-radius:50%;border:1px solid #ffffff42;box-shadow:0 0 0 20px #ffffff0c,0 0 0 40px #ffffff08}.ki-sentra-copy{position:relative;z-index:1;max-width:700px}.ki-sentra-kicker{font-size:10px;letter-spacing:1.5px;font-weight:800;color:#b6ddff}.ki-sentra-title{font-size:22px;font-weight:850;margin:8px 0}.ki-sentra-desc{font-size:12px;color:#e1effa;line-height:1.5}.ki-sentra-cta{position:relative;z-index:1;white-space:nowrap;border-radius:8px;background:white;color:#153e68;padding:10px 13px;font-size:11px;font-weight:800}
+
+.ki-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.ki-panel-heading h3 {
+    margin: 0;
+    color: #17365e;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.ki-panel-heading a {
+    color: #2868ad;
+    text-decoration: none;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.ki-potential-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ki-potential-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.ki-potential-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.ki-potential-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #e5efff;
+    color: #3479d7;
+    font-size: 20px;
+}
+
+.ki-potential-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ki-potential-name {
+    color: #17365e;
+    font-weight: 600;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.ki-potential-type {
+    color: #8191a6;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.ki-potential-status {
+    flex-shrink: 0;
+    color: #218653;
+    background: #e3f6eb;
+    padding: 5px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+@media(max-width:1150px){.ki-main-grid{grid-template-columns:1fr 1fr}.ki-news-panel{grid-column:1/-1}.ki-news{grid-template-columns:repeat(3,minmax(0,1fr))}.ki-bottom{grid-template-columns:1fr}}
+@media(max-width:780px){.ki-filter-form{grid-template-columns:1fr 1fr}.ki-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ki-main-grid{grid-template-columns:1fr}.ki-news-panel{grid-column:auto}.ki-news{grid-template-columns:1fr}.ki-products{grid-template-columns:repeat(3,minmax(0,1fr))}.ki-hero-copy{padding:27px}.ki-hero:after{right:-40px;opacity:.55}}
+@media(max-width:520px){.ki-filter-form{grid-template-columns:1fr}.ki-kpi{padding:12px;gap:8px}.ki-kpi-icon{width:35px;height:35px;flex-basis:35px}.ki-kpi-value{font-size:22px}.ki-products{grid-template-columns:repeat(2,minmax(0,1fr))}.ki-sentra-banner{align-items:flex-start;flex-direction:column}.ki-sentra-banner:after{right:-40px}}
 </style>
 @endpush
 
 @section('content')
-    <div class="dashboard">
-        <div class="dashboard-heading">
-            <div>
-                <h1>Dashboard KI Kalteng</h1>
-                <p>Ringkasan data Kekayaan Intelektual Kalimantan Tengah</p>
-            </div>
+@php
+    $rekapTotal = (int)$terdaftar + (int)$proses;
+    $jenisLabels = $jumlahPerJenis->pluck('nama_jenis')->values();
+    $jenisValues = $jumlahPerJenis->pluck('total')->map(fn($n)=>(int)$n)->values();
+@endphp
+<div class="ki-dash">
+    {{-- Filter dashboard sebelumnya tetap dipertahankan --}}
+    
 
-            <div class="last-update-badge">
-                <span class="last-update-dot"></span>
-                <span>
-                    Last Update:
-                    {{ now()->translatedFormat('d F Y') }}
-                    pukul {{ now()->format('H:i') }} WIB
+    <section class="ki-hero" id="kiHero">
+        <div class="ki-hero-copy">
+            <div class="ki-kicker">Produk Kekayaan Intelektual Unggulan</div>
+            <h1 id="kiHeroTitle">Karya Lokal,<br>Untuk Kalimantan Tengah</h1>
+            <p id="kiHeroText">Inovasi masyarakat, kekayaan untuk masa depan.</p>
+            <a class="ki-hero-link" href="{{ route('galeri-ki.index') }}">Lihat Selengkapnya <span>→</span></a>
+        </div>
+        <div class="ki-hero-controls"><button class="active" type="button" aria-label="Slide 1"></button><button type="button" aria-label="Slide 2"></button><button type="button" aria-label="Slide 3"></button></div>
+    </section>
+
+    <section class="ki-panel ki-filter">
+        <form class="ki-filter-form" method="GET" action="{{ url('/') }}">
+            <div class="ki-field"><label for="jenis_ki_id">Jenis Kekayaan Intelektual</label><select name="jenis_ki_id" id="jenis_ki_id"><option value="">Semua Jenis KI</option>@foreach($jenisKI as $jenis)<option value="{{ $jenis->id }}" {{ (string)$jenisKiId === (string)$jenis->id ? 'selected' : '' }}>{{ $jenis->nama_jenis }}</option>@endforeach</select></div>
+            <div class="ki-field"><label for="kabupaten_id">Kabupaten/Kota</label><select name="kabupaten_id" id="kabupaten_id"><option value="">Semua Kabupaten/Kota</option>@foreach($daftarKabupaten as $kab)<option value="{{ $kab->id }}" {{ (string)$kabupatenId === (string)$kab->id ? 'selected' : '' }}>{{ $kab->nama_kabupaten }}</option>@endforeach</select></div>
+            <button class="ki-btn" type="submit">Terapkan Filter</button><a class="ki-btn light" href="{{ url('/') }}">Reset</a>
+        </form>
+    </section>
+
+    <section class="ki-kpis">
+        <div class="ki-panel ki-kpi"><div class="ki-kpi-icon blue">▤</div><div><div class="ki-kpi-label">Total KI (Rekap)</div><div class="ki-kpi-value">{{ number_format($rekapTotal,0,',','.') }}</div><div class="ki-kpi-note">Terdaftar + Dalam Proses</div></div></div>
+        <div class="ki-panel ki-kpi"><div class="ki-kpi-icon green">✓</div><div><div class="ki-kpi-label">Terdaftar</div><div class="ki-kpi-value">{{ number_format($terdaftar,0,',','.') }}</div><div class="ki-kpi-note">Data KI terdaftar</div></div></div>
+        <div class="ki-panel ki-kpi"><div class="ki-kpi-icon amber">◷</div><div><div class="ki-kpi-label">Dalam Proses</div><div class="ki-kpi-value">{{ number_format($proses,0,',','.') }}</div><div class="ki-kpi-note">Data KI dalam proses</div></div></div>
+        <div class="ki-panel ki-kpi"><div class="ki-kpi-icon pink">▥</div><div><div class="ki-kpi-label">Potensi KI</div><div class="ki-kpi-value">{{ number_format($potensi,0,',','.') }}</div><div class="ki-kpi-note">Dihitung terpisah dari rekap</div></div></div>
+    </section>
+
+    <section class="ki-main-grid">
+        <div class="ki-panel">
+            <div class="ki-panel-head"><h2 class="ki-panel-title">Data KI per Jenis</h2></div>
+            <div class="ki-chart"><canvas id="kiByTypeChart"></canvas></div>
+        </div>
+        <div class="ki-panel">
+            <div class="ki-panel-head"><h2 class="ki-panel-title">Status KI</h2></div>
+            <div class="ki-status-content"><div class="ki-donut"><canvas id="kiStatusChart"></canvas></div>
+                <div class="ki-legend">
+                    <div class="ki-legend-row"><span class="ki-dot" style="background:#3479d7"></span>Terdaftar<strong>{{ number_format($terdaftar,0,',','.') }}</strong></div>
+                    <div class="ki-legend-row"><span class="ki-dot" style="background:#f5ad2f"></span>Dalam Proses<strong>{{ number_format($proses,0,',','.') }}</strong></div>
+                    <div class="ki-legend-row"><span class="ki-dot" style="background:#ed4b79"></span>Potensi<strong>{{ number_format($potensi,0,',','.') }}</strong></div>
+                </div>
+            </div>
+        </div>
+       
+<div class="ki-panel">
+    <div class="ki-panel-heading">
+        <h3>Potensi KI Diterima</h3>
+        <a href="{{ route('potensi-ki.index') }}">
+            Lihat Semua &rarr;
+        </a>
+    </div>
+
+    <div class="ki-potential-list">
+        @forelse ($potensiMenungguTelaah as $item)
+            <div class="ki-potential-item">
+                <div class="ki-potential-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+
+                <div class="ki-potential-info">
+                    <div class="ki-potential-name">
+                        {{ $item->nama_ki ?? $item->nama ?? '-' }}
+                    </div>
+
+                    <div class="ki-potential-type">
+                        {{ $item->jenisKi->nama_jenis ?? 'Jenis KI belum tersedia' }}
+                    </div>
+                </div>
+
+                <span class="ki-potential-status">
+                    Diterima
                 </span>
             </div>
-
-        </div>
-
-
-        <div class="ki-slider" id="kiSlider">
-
-            <!-- SLIDE 1: STATISTIK KI -->
-            <section class="ki-slide active">
-                <div class="ki-slide-content">
-                    <span class="ki-eyebrow">SISTEM INFORMASI KEKAYAAN INTELEKTUAL</span>
-                    <h2>Kenali Potensi KI<br>Kalimantan Tengah</h2>
-                    <p>Ringkasan perkembangan Kekayaan Intelektual di wilayah Kalimantan Tengah.</p>
-
-                    <div class="ki-stats">
-                        <div>
-                            <span>Total KI</span>
-                            <strong>{{ number_format($totalKI, 0, ',', '.') }}</strong>
-                        </div>
-                        <div>
-                            <span>Terdaftar</span>
-                            <strong>{{ number_format($terdaftar, 0, ',', '.') }}</strong>
-                        </div>
-                        <div>
-                            <span>Dalam Proses</span>
-                            <strong>{{ number_format($proses, 0, ',', '.') }}</strong>
-                        </div>
-                        <div>
-                            <span>Potensi KI</span>
-                            <strong>{{ number_format($potensi, 0, ',', '.') }}</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ki-visual">
-                    <div class="ki-circle circle-one"></div>
-                    <div class="ki-circle circle-two"></div>
-                    <div class="ki-visual-icon">KI</div>
-                    <span class="ki-visual-caption">KALTENG</span>
-                </div>
-            </section>
-
-            <!-- SLIDE 2: PERKEMBANGAN -->
-            <section class="ki-slide">
-                <div class="ki-slide-content">
-                    <span class="ki-eyebrow">PERKEMBANGAN DATA</span>
-                    <h2>Terus Dorong Pertumbuhan<br>Kekayaan Intelektual</h2>
-                    <p>Statistik penambahan data berdasarkan waktu pencatatan di sistem.</p>
-
-                    <div class="ki-growth">
-                        <div class="ki-growth-card">
-                            <span>Ditambahkan Hari Ini</span>
-                            <strong>{{ $kiHariIni ?? '-' }}</strong>
-<small>Belum tersedia data tanggal pencatatan</small>
-                        </div>
-                        <div class="ki-growth-card">
-                            <span>Ditambahkan Bulan Ini</span>
-                            <strong>{{ $kiBulanIni ?? '-' }}</strong>
-<small>Belum tersedia data tanggal pencatatan</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ki-visual growth-visual">
-                    <div class="mini-bar bar-a"></div>
-                    <div class="mini-bar bar-b"></div>
-                    <div class="mini-bar bar-c"></div>
-                    <div class="mini-bar bar-d"></div>
-                    <div class="mini-bar bar-e"></div>
-                    <div class="growth-line">↗</div>
-                    <span class="ki-visual-caption">DATA BERTUMBUH</span>
-                </div>
-            </section>
-
-            <!-- SLIDE 3: SEBARAN WILAYAH -->
-            <section class="ki-slide">
-                <div class="ki-slide-content">
-                    <span class="ki-eyebrow">SEBARAN KEKAYAAN INTELEKTUAL</span>
-                    <h2>Angkat Potensi Unggulan<br>Daerah Kita</h2>
-                    <p>Identifikasi wilayah dengan pencatatan KI terbanyak untuk mendukung pemetaan potensi daerah.</p>
-
-                    <div class="ki-region-card">
-                        <span>Kabupaten/Kota dengan data KI terbanyak</span>
-                        <strong>
-                            {{ $kabupatenTerbanyak->nama_kabupaten ?? 'Belum tersedia' }}
-                        </strong>
-                        <small>
-                            {{ isset($kabupatenTerbanyak->total)
-                                ? number_format($kabupatenTerbanyak->total, 0, ',', '.') . ' data KI'
-                                : 'Belum ada data' }}
-                        </small>
-                    </div>
-                </div>
-
-                <div class="ki-visual region-visual">
-                    <div class="region-ring ring-one"></div>
-                    <div class="region-ring ring-two"></div>
-                    <div class="region-symbol">⌖</div>
-                    <span class="ki-visual-caption">KI KALTENG</span>
-                </div>
-            </section>
-
-            <!-- NAVIGASI -->
-            <button type="button" class="ki-arrow ki-prev" aria-label="Slide sebelumnya"
-                onclick="geserSlideKI(-1)">‹</button>
-
-            <button type="button" class="ki-arrow ki-next" aria-label="Slide berikutnya"
-                onclick="geserSlideKI(1)">›</button>
-
-            <div class="ki-dots">
-                <button type="button" class="ki-dot active" aria-label="Slide 1" onclick="pilihSlideKI(0)"></button>
-                <button type="button" class="ki-dot" aria-label="Slide 2" onclick="pilihSlideKI(1)"></button>
-                <button type="button" class="ki-dot" aria-label="Slide 3" onclick="pilihSlideKI(2)"></button>
-            </div>
-        </div>
-
-
-        <section class="panel filter-panel">
-            <form class="filter-form" method="GET" action="{{ url('/') }}">
-                <div class="filter-field">
-                    <label for="jenis_ki_id">Jenis Kekayaan Intelektual</label>
-                    <select name="jenis_ki_id" id="jenis_ki_id">
-                        <option value="">Semua Jenis KI</option>
-                        @foreach ($jenisKI as $jenis)
-                            <option value="{{ $jenis->id }}"
-                                {{ (string) $jenisKiId === (string) $jenis->id ? 'selected' : '' }}>
-                                {{ $jenis->nama_jenis }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="filter-field">
-                    <label for="kabupaten_id">Kabupaten/Kota</label>
-                    <select name="kabupaten_id" id="kabupaten_id">
-                        <option value="">Semua Kabupaten/Kota</option>
-                        @foreach ($daftarKabupaten as $kab)
-                            <option value="{{ $kab->id }}"
-                                {{ (string) $kabupatenId === (string) $kab->id ? 'selected' : '' }}>
-                                {{ $kab->nama_kabupaten }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <button class="filter-btn" type="submit">Terapkan Filter</button>
-                <a class="filter-reset" href="{{ url('/') }}">Reset</a>
-            </form>
-        </section>
-
-        @php
-            $totalAman = max((int) $totalKI, 0);
-            $persenTerdaftar = $totalAman ? round(($terdaftar / $totalAman) * 100, 1) : 0;
-            $persenProses = $totalAman ? round(($proses / $totalAman) * 100, 1) : 0;
-            $persenPotensi = $totalAman ? round(($potensi / $totalAman) * 100, 1) : 0;
-        @endphp
-
-        <section class="kpi-grid">
-            <div class="panel kpi-card">
-                <div class="kpi-icon blue">▰</div>
-                <div>
-                    <div class="kpi-title">Total KI</div>
-                    <div class="kpi-number">{{ number_format($totalKI, 0, ',', '.') }}</div>
-                    <div class="kpi-note">Terdaftar + dalam proses</div>
-                </div>
-            </div>
-            <div class="panel kpi-card">
-                <div class="kpi-icon green">✓</div>
-                <div>
-                    <div class="kpi-title">Sudah Terdaftar</div>
-                    <div class="kpi-number">{{ number_format($terdaftar, 0, ',', '.') }}</div>
-                    <div class="kpi-note">{{ number_format($persenTerdaftar, 1, ',', '.') }}% dari total KI</div>
-                </div>
-            </div>
-            <div class="panel kpi-card">
-                <div class="kpi-icon amber">◷</div>
-                <div>
-                    <div class="kpi-title">Dalam Proses</div>
-                    <div class="kpi-number">{{ number_format($proses, 0, ',', '.') }}</div>
-                    <div class="kpi-note">{{ number_format($persenProses, 1, ',', '.') }}% dari total KI</div>
-                </div>
-            </div>
-            <div class="panel kpi-card">
-                <div class="kpi-icon purple">✦</div>
-                <div>
-                    <div class="kpi-title">Potensi KI</div>
-                    <div class="kpi-number">{{ number_format($potensi, 0, ',', '.') }}</div>
-                    <div class="kpi-note">Dihitung terpisah dari total KI terverifikasi</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="analytics-grid">
-            <div class="panel chart-panel">
-                <div class="panel-heading">
-                    <div>
-                        <h2>KI Terverifikasi per Kabupaten/Kota</h2>
-                        <p>Jumlah KI terdaftar dan dalam proses berdasarkan rekap terverifikasi</p>
-                    </div>
-                </div>
-                <div class="chart-area"><canvas id="kiChart"></canvas></div>
-            </div>
-            <div class="panel chart-panel">
-                <div class="panel-heading">
-                    <div>
-                        <h2>Status KI</h2>
-                        <p>Komposisi KI terverifikasi: terdaftar dan dalam proses</p>
-                    </div>
-                </div>
-                <div class="donut-area"><canvas id="statusChart"></canvas></div>
-            </div>
-            <div class="panel chart-panel potensi-chart-panel">
-                <div class="panel-heading">
-                    <div>
-                        <h2>Potensi KI per Kabupaten/Kota</h2>
-                        <p>Jumlah KI potensi dari data aplikasi, terpisah dari data KI terverifikasi</p>
-                    </div>
-                </div>
-                <div class="chart-area"><canvas id="potensiChart"></canvas></div>
-            </div>
-        </section>
-
-        <section class="panel table-panel jenis-ki-panel">
-            <div class="panel-heading">
-                <div>
-                    <h2>Jumlah KI per Jenis</h2>
-                    <p>Jumlah KI terdaftar berdasarkan rekap data terbaru</p>
-                </div>
-            </div>
-            <div class="chart-area jenis-ki-chart-area">
-                <canvas id="jenisKiChart"></canvas>
-            </div>
-            <div class="jenis-ki-summary" id="jenisKiSummary">
-                @forelse ($jenisKI as $jenis)
-                    <div class="jenis-ki-summary-item">
-                        <span class="jenis-ki-name">{{ $jenis->nama_jenis }}</span>
-                        <strong>{{ number_format($jenis->total_terdaftar ?? 0, 0, ',', '.') }}</strong>
-                    </div>
-                @empty
-                    <p class="empty-row">Belum ada data rekap KI.</p>
-                @endforelse
-            </div>
-        </section>
-
-
-
-
+        @empty
+            <p class="text-muted">
+                Belum ada potensi KI yang diterima.
+            </p>
+        @endforelse
     </div>
+</div>
+
+    </section>
+
+    <section class="ki-bottom">
+        <div class="ki-panel">
+            <div class="ki-panel-head"><h2 class="ki-panel-title">Produk KI Unggulan</h2><a class="ki-btn light" href="{{ route('galeri-ki.index') }}">Lihat Semua →</a></div>
+            @if($produkUnggulan->count())
+            <div class="ki-products">
+                @foreach($produkUnggulan as $item)
+                <article><div class="ki-product-img"><img src="{{ asset('storage/'.$item->foto) }}" alt="{{ $item->nama_produk }}"></div><div class="ki-product-title">{{ $item->nama_produk }}</div><span class="ki-product-type">{{ $item->nama_jenis ?? 'Jenis KI' }}</span><div class="ki-news-sub">{{ \Illuminate\Support\Str::limit($item->caption,75) }}</div></article>
+                @endforeach
+            </div>
+            @else
+            <p class="ki-empty">Belum ada produk unggulan. Master dapat menandai produk sebagai unggulan di menu Galeri Produk KI.</p>
+            @endif
+        </div>
+        <a class="ki-sentra-banner" href="{{ route('sentra-ki.index') }}">
+            <div class="ki-sentra-copy"><div class="ki-sentra-kicker">KOLABORASI DAN PENDAMPINGAN</div><div class="ki-sentra-title">Kenali Sentra KI Kalimantan Tengah</div><div class="ki-sentra-desc">Temukan pusat pendampingan dan pengembangan Kekayaan Intelektual di Kalimantan Tengah.</div></div><span class="ki-sentra-cta">Jelajahi Sentra KI →</span>
+        </a>
+    </section>
+</div>
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    let slideKIIndex = 0;
-    let slideKITimer;
+document.addEventListener('DOMContentLoaded',function(){
+ const labels=@json($jenisLabels), values=@json($jenisValues);
+ 
+const byType = document.getElementById('kiByTypeChart');
 
-    function tampilkanSlideKI(index) {
-        const slider = document.getElementById('kiSlider');
-        if (!slider) return;
-
-        const slides = slider.querySelectorAll('.ki-slide');
-        const dots = slider.querySelectorAll('.ki-dot');
-
-        slideKIIndex = (index + slides.length) % slides.length;
-
-        slides.forEach((slide, i) => {
-            slide.classList.toggle('active', i === slideKIIndex);
-        });
-
-        dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === slideKIIndex);
-        });
-    }
-
-    function geserSlideKI(arah) {
-        tampilkanSlideKI(slideKIIndex + arah);
-        mulaiOtomatisSlideKI();
-    }
-
-    function pilihSlideKI(index) {
-        tampilkanSlideKI(index);
-        mulaiOtomatisSlideKI();
-    }
-
-    function mulaiOtomatisSlideKI() {
-        clearInterval(slideKITimer);
-        slideKITimer = setInterval(() => {
-            tampilkanSlideKI(slideKIIndex + 1);
-        }, 6000);
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        tampilkanSlideKI(0);
-        mulaiOtomatisSlideKI();
-    });
-</script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const labels = @json($chartLabels);
-            const terdaftar = @json($chartTerdaftar);
-            const proses = @json($chartProses);
-            const potensi = @json($chartPotensi);
-
-            const barCanvas = document.getElementById('kiChart');
-            if (barCanvas) {
-                new Chart(barCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                                label: 'Terdaftar',
-                                data: terdaftar,
-                                backgroundColor: 'rgba(59, 130, 246, .72)',
-                                borderColor: '#3b82f6',
-                                borderWidth: 1,
-                                borderRadius: 5,
-                                maxBarThickness: 22
-                            },
-                            {
-                                label: 'Proses',
-                                data: proses,
-                                backgroundColor: 'rgba(244, 86, 125, .68)',
-                                borderColor: '#f4567d',
-                                borderWidth: 1,
-                                borderRadius: 5,
-                                maxBarThickness: 22
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: 'rectRounded',
-                                    boxWidth: 9,
-                                    boxHeight: 9,
-                                    padding: 18,
-                                    color: '#64748b',
-                                    font: {
-                                        size: 11
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: '#173d68',
-                                padding: 12,
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    color: '#64748b',
-                                    maxRotation: 40,
-                                    minRotation: 0,
-                                    font: {
-                                        size: 10
-                                    }
-                                },
-                                border: {
-                                    display: false
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0,
-                                    color: '#94a3b8',
-                                    font: {
-                                        size: 10
-                                    }
-                                },
-                                grid: {
-                                    color: '#edf1f6'
-                                },
-                                border: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            const potensiCanvas = document.getElementById('potensiChart');
-            if (potensiCanvas) {
-                new Chart(potensiCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Potensi KI',
-                            data: potensi,
-                            backgroundColor: 'rgba(251, 146, 60, .72)',
-                            borderColor: '#fb923c',
-                            borderWidth: 1,
-                            borderRadius: 5,
-                            maxBarThickness: 28
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: 'rectRounded',
-                                    boxWidth: 9,
-                                    boxHeight: 9,
-                                    padding: 18,
-                                    color: '#64748b',
-                                    font: { size: 11 }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: '#173d68',
-                                padding: 12,
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: '#64748b', maxRotation: 40, font: { size: 10 } },
-                                border: { display: false }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0, color: '#94a3b8', font: { size: 10 } },
-                                grid: { color: '#edf1f6' },
-                                border: { display: false }
-                            }
-                        }
-                    }
-                });
-            }
-
-            const statusCanvas = document.getElementById('statusChart');
-            if (statusCanvas) {
-                new Chart(statusCanvas, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Sudah Terdaftar', 'Dalam Proses'],
-                        datasets: [{
-                            data: [{{ (int) $terdaftar }}, {{ (int) $proses }}],
-                            backgroundColor: ['#2584e8', '#f4567d'],
-                            borderColor: '#ffffff',
-                            borderWidth: 4,
-                            hoverOffset: 7
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '68%',
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: 'circle',
-                                    boxWidth: 8,
-                                    boxHeight: 8,
-                                    padding: 14,
-                                    color: '#64748b',
-                                    font: {
-                                        size: 10
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: '#173d68',
-                                padding: 12,
-                                cornerRadius: 8
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    
-    // Grafik jumlah KI per jenis, menggunakan rekap tanggal terbaru yang disiapkan controller.
-    const jenisKiCanvas = document.getElementById('jenisKiChart');
-    if (jenisKiCanvas) {
-        const jenisKiLabels = @json($jenisKI->pluck('nama_jenis')->values());
-        const jenisKiValues = @json($jenisKI->pluck('total_terdaftar')->map(fn ($value) => (int) ($value ?? 0))->values());
-
-        new Chart(jenisKiCanvas, {
-            type: 'bar',
-            data: {
-                labels: jenisKiLabels,
-                datasets: [{
-                    label: 'KI Terdaftar',
-                    data: jenisKiValues,
-                    backgroundColor: '#2f80c9',
-                    hoverBackgroundColor: '#1d5b91',
-                    borderRadius: 7,
-                    barThickness: 24,
-                    maxBarThickness: 28,
-                    minBarLength: 5
-                }]
-            },
-            plugins: [{
-                id: 'jumlahLabel',
-                afterDatasetsDraw(chart) {
-                    const { ctx } = chart;
-                    const dataset = chart.data.datasets[0];
-                    const meta = chart.getDatasetMeta(0);
-                    ctx.save();
-                    ctx.font = '600 12px Arial';
-                    ctx.fillStyle = '#334155';
-                    ctx.textBaseline = 'middle';
-                    meta.data.forEach((bar, index) => {
-                        const value = Number(dataset.data[index] || 0);
-                        const label = new Intl.NumberFormat('id-ID').format(value);
-                        const position = bar.tooltipPosition();
-                        const chartArea = chart.chartArea;
-                        const textWidth = ctx.measureText(label).width;
-                        let x = position.x + 8;
-                        let align = 'left';
-                        if (x + textWidth > chartArea.right - 2) {
-                            x = position.x - 8;
-                            align = 'right';
-                        }
-                        ctx.textAlign = align;
-                        ctx.fillText(label, x, position.y);
-                    });
-                    ctx.restore();
+if (byType) {
+    new Chart(byType, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Jumlah KI Rekap',
+                data: values,
+                backgroundColor: [
+                    '#6da4ed',
+                    '#f45d7c',
+                    '#3179de',
+                    '#ffb12c',
+                    '#8b70d6',
+                    '#46a9b9',
+                    '#7ba65b'
+                ],
+                borderRadius: 5,
+                maxBarThickness: 28,
+                minBarLength: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    right: 35
                 }
-            }],
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: { padding: { right: 28, left: 6 } },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'Jumlah: ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
-                            }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Jumlah: ' +
+                                Number(context.raw).toLocaleString('id-ID');
                         }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        color: '#8191a6'
+                    },
+                    grid: {
+                        color: '#edf1f6'
                     }
                 },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grace: '8%',
-                        ticks: {
-                            color: '#64748b',
-                            precision: 0,
-                            callback: value => new Intl.NumberFormat('id-ID').format(value)
-                        },
-                        grid: { color: '#e8eef5', borderDash: [4, 4] }
+                y: {
+                    grid: {
+                        display: false
                     },
-                    y: {
-                        grid: { display: false },
-                        ticks: { color: '#475569', font: { size: 12, weight: '600' } }
+                    ticks: {
+                        color: '#536985',
+                        font: {
+                            size: 11
+                        }
                     }
                 }
             }
-        });
-    }
+        },
+        plugins: [{
+            id: 'angkaUjungBatang',
+            afterDatasetsDraw(chart) {
+                const ctx = chart.ctx;
+                const dataset = chart.data.datasets[0];
+                const meta = chart.getDatasetMeta(0);
 
+                ctx.save();
+                ctx.font = 'bold 11px Arial';
+                ctx.fillStyle = '#17365e';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+
+                meta.data.forEach((bar, index) => {
+                    const value = Number(dataset.data[index]);
+                    const x = Math.max(
+                        bar.x + 6,
+                        bar.base + 6
+                    );
+                    ctx.fillText(
+                        value.toLocaleString('id-ID'),
+                        x,
+                        bar.y
+                    );
+                });
+
+                ctx.restore();
+            }
+        }]
+    });
+}
+
+ const status=document.getElementById('kiStatusChart');
+ if(status){new Chart(status,{type:'doughnut',data:{labels:['Terdaftar','Dalam Proses','Potensi'],datasets:[{data:[{{ (int)$terdaftar }},{{ (int)$proses }},{{ (int)$potensi }}],backgroundColor:['#3479d7','#f5ad2f','#ed4b79'],borderColor:'#fff',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}}}});}
+ const slides=[
+  {title:'Karya Lokal,<br>Untuk Kalimantan Tengah',text:'Inovasi masyarakat, kekayaan untuk masa depan.'},
+  {title:'Lindungi Karya,<br>Perkuat Inovasi',text:'Kenali dan dukung Kekayaan Intelektual masyarakat Kalimantan Tengah.'},
+  {title:'Dari Ide Menjadi<br>Karya yang Bernilai',text:'Temukan produk dan potensi kreatif dari seluruh wilayah Kalimantan Tengah.'}
+ ];
+ const hero=document.getElementById('kiHero'), title=document.getElementById('kiHeroTitle'), desc=document.getElementById('kiHeroText'), dots=[...document.querySelectorAll('.ki-hero-controls button')];let idx=0;
+ function show(i){idx=i%slides.length;title.innerHTML=slides[idx].title;desc.textContent=slides[idx].text;dots.forEach((d,j)=>d.classList.toggle('active',j===idx));}
+ dots.forEach((d,i)=>d.addEventListener('click',()=>show(i)));setInterval(()=>show((idx+1)%slides.length),6000);
+});
 </script>
 @endpush
