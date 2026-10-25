@@ -111,7 +111,7 @@
     <section class="ki-hero" id="kiHero">
         <div class="ki-hero-copy">
             <div class="ki-kicker">Produk Kekayaan Intelektual Unggulan</div>
-            <h1 id="kiHeroTitle">Karya Lokal,<br>Untuk Kalimantan Tengah</h1>
+            <h1 id="kiHeroTitle">Karya Taylor Swift,<br>Untuk Kalimantan Tengah</h1>
             <p id="kiHeroText">Inovasi masyarakat, kekayaan untuk masa depan.</p>
             <a class="ki-hero-link" href="{{ route('galeri-ki.index') }}">Lihat Selengkapnya <span>→</span></a>
         </div>
