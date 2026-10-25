@@ -1,0 +1,76 @@
+name: Deploy to Prod sikilat.givenjeremia.com
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            set -e
+
+            echo "===== START DEPLOY ====="
+
+            cd ~/domains/sikilat.givenjeremia.com/public_html
+
+            echo "Current directory:"
+            pwd
+
+            echo "Files:"
+            ls -lah
+
+            echo "Check artisan:"
+            ls -lah artisan || true
+
+            echo "Check composer:"
+            ls -lah composer.json || true
+
+            echo "PHP:"
+            which php
+            php -v
+
+            echo "Git pull"
+            git pull origin main
+
+            # echo "Write .env"
+            # cat > .env <<'EOF'
+            # ${{ secrets.APP_ENV_FILE }}
+            # EOF
+
+            # echo "Composer install"
+            # composer install --no-dev --prefer-dist --optimize-autoloader
+
+            echo "Before artisan"
+            pwd
+            ls -lah artisan
+            php artisan --version
+
+            # echo "Migration"
+            # php artisan migrate --force
+
+            echo "Clear cache"
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            echo "Build cache"
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            echo "Optimize"
+            php artisan optimize
+
+            echo "===== DEPLOY SUCCESS ====="
