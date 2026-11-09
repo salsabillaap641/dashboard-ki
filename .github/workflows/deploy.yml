@@ -1,4 +1,4 @@
-name: Deploy to Prod sikilat.givenjeremia.com
+name: Deploy to Prod satudataki-kalteng.site
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
 
             echo "===== START DEPLOY ====="
 
-            cd ~/domains/sikilat.givenjeremia.com/public_html
+            cd ~/domains/satudataki-kalteng.site/public_html
 
             echo "Current directory:"
             pwd
