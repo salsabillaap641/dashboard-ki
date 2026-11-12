@@ -73,5 +73,15 @@ jobs:
 
             echo "Optimize"
             /opt/alt/php84/usr/bin/php artisan optimize
+            
+            echo "Storage Link"
+            if [ ! -L public/storage ]; then
+                /opt/alt/php84/usr/bin/php artisan storage:link
+            else
+                echo "Storage link already exists"
+            fi
+
+            echo "Verify storage link"
+            ls -lah public/storage
 
             echo "===== DEPLOY SUCCESS ====="
